@@ -1,7 +1,7 @@
 
 class No:
 
-    def __inti__(self, chave, valor):
+    def __init__(self, chave, valor):
         self.chave = chave
         self.valor = valor
         self.esquerda = None
@@ -18,7 +18,7 @@ class ArvoreBinariaBusca:
         else:
             self._inserir_recursivo(self.raiz,chave,valor)
 
-    def _inserir_recursivo(self, raiz, chave, valor):
+    def _inserir_recursivo(self, no_atual, chave, valor):
         if chave < no_atual.chave:
             if no_atual.esquerda is None:
                 no_atual.esquerda = No(chave, valor)
@@ -30,7 +30,7 @@ class ArvoreBinariaBusca:
             else:
                 self._inserir_recursivo(no_atual.direita, chave, valor)
         else:
-            no_atual,valor = valor
+            no_atual.valor = valor
 
     def buscar(self, chave):
         return self._buscar_recursivo(self.raiz, chave)
@@ -61,7 +61,7 @@ class ArvoreBinariaBusca:
             elif no_atual.direita is None:
                 return no_atual.esquerda
 
-            no_sucessor = self._encotrar_minimo(no_atual.direita)
+            no_sucessor = self._encontrar_minimo(no_atual.direita)
             no_atual.chave = no_sucessor.chave
             no_atual.valor = no_sucessor.valor
             no_atual.direita = self._remover_recursivo(no_atual.direita, no_sucessor.chave)
