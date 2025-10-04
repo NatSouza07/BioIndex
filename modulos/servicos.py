@@ -101,3 +101,25 @@ class GerenciadorServicos:
 
     def ler_cidades_exaustivamente(self) -> list[list[str]]:
         return IO_TABELAS['cidades'].ler_todos()
+
+    def lookup_cidade(self, cod_cidade_fk: str) -> list[str] | None:
+        NOME_TABELA = 'cidades'
+        bst = INDICES.get(NOME_TABELA)
+        io_manager = IO_TABELAS.get(NOME_TABELA)
+
+        if bst is None or io_manager is None:
+            return None
+
+        try:
+            chave_busca_int = int(cod_cidade_fk)
+        except ValueError:
+            return None
+
+        num_linha = bst.buscar(chave_busca_int)
+
+        if num_linha is None:
+            return None
+
+        registro_cidade = io_manager.ler_linha(num_linha)
+
+        return registro_cidade
