@@ -3,6 +3,7 @@ import io
 from .gerenciador_io import GerenciadorTabela
 from .arvore_binaria import ArvoreBinaria
 from .gerenciador_io import CAMINHO_DADOS
+from .modelos import Paciente
 
 INDICES = {}
 IO_TABELAS = {}
@@ -123,3 +124,49 @@ class GerenciadorServicos:
         registro_cidade = io_manager.ler_linha(num_linha)
 
         return registro_cidade
+
+    def cadastrar_paciente(self, paciente_obj: Paciente) -> bool:
+        NOME_TABELA = 'pacientes'
+        io_manager = IO_TABELAS[NOME_TABELA]
+        bst = INDICES[NOME_TABELA]
+
+        cod_cidade_fk = str(paciente_obj.cod_cidade)
+
+        if not self.lookup_cidade(cod_cidade_fk):
+            print(f"Erro FK: Código de cidade '{cod_cidade_fk}' não encontrado")
+            return False
+
+        registro_a_salvar = paciente_obj.to_list()
+
+        try:
+            novo_num_linha = io_manager.anexar_registro(registro_a_salvar)
+            chave_primaria_int = paciente_obj.cod_paciente
+
+            bst.inserir(chave_primaria_int, novo_num_linha)
+            return True
+        except ValueError as e:
+            print(f"Erro ao cadastrar paciente: {e}")
+            return False
+
+    def buscar_paciente(self, cod_paciente: str) -> list[str] | None:
+        NOME_TABELA = 'pacientes'
+        io_manager = IO_TABELAS[NOME_TABELA]
+        bst = INDICES[NOME_TABELA]
+
+        try:
+            chave_busca_int = int(cod_paciente)
+        except ValueError:
+            return None
+
+        num_linha = bst.buscar(chave_busca_int)
+
+        if num_linha is None:
+            return None
+
+        return io_manager.ler_linha(num_linha)
+
+    def excluir_paciente(self, cod_paciente: str) -> bool:
+        return self.remover_fisicamente_registro('pacientes', cod_paciente)
+
+    def ler_pacientes_exaustivamente(self) -> list[list[str]]:
+        return IO_TABELAS['pacientes'].ler_todos()
