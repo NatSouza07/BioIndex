@@ -1,9 +1,8 @@
-import io
-
 from .gerenciador_io import GerenciadorTabela
 from .arvore_binaria import ArvoreBinaria
 from .gerenciador_io import CAMINHO_DADOS
-from .modelos import Paciente
+from .modelos import Paciente, Paciente
+from .import regras_negocio
 
 INDICES = {}
 IO_TABELAS = {}
@@ -170,3 +169,25 @@ class GerenciadorServicos:
 
     def ler_pacientes_exaustivamente(self) -> list[list[str]]:
         return IO_TABELAS['pacientes'].ler_todos()
+
+    def calcular_diagnostico_paciente(self, cod_paciente: str) -> dict | None:
+        registro = self.buscar_paciente(cod_paciente)
+
+        if not registro:
+            return None
+
+        try:
+            peso = float(registro[6])
+            altura = float(registro[7])
+        except (ValueError, IndexError):
+            return {"erro": "Dados de peso/altura inválidos no registro."}
+
+        imc = regras_negocio.calcular_imc(peso, altura)
+        diagnostico = regras_negocio.diagnostico(imc)
+
+        return {
+            "imc": imc,
+            "diagnostico": diagnostico,
+            "paciente_registro": registro,
+        }
+
