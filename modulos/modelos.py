@@ -88,3 +88,12 @@ class Diaria:
     cod_especialidade: int
     quantidade_consultas: int
 
+    def gerar_chave_composta(self) -> str:
+        return f"{self.cod_dia}|{self.cod_especialidade}"
+
+    def to_list(self) -> list[str]:
+        return [
+            self.cod_dia,
+            str(self.cod_especialidade),
+            str(self.quantidade_consultas),
+        ]

@@ -241,3 +241,45 @@ class GerenciadorServicos:
         }
 
         return resultado
+
+    def cadastrar_diaria(self, diaria_obj: Diaria) -> bool:
+        NOME_TABELA = 'diarias'
+        io_manager = IO_TABELAS[NOME_TABELA]
+        bst = INDICES[NOME_TABELA]
+
+        chave_composta_str = diaria_obj.gerar_chave_composta()
+
+        registro_a_salvar = diaria_obj.to_list()
+
+        try:
+            if bst.buscar(chave_composta_str) is not None:
+                print(f"Erro: Diária com chave '{chave_composta_str}' já existe.")
+                return False
+
+            novo_num_linha = io_manager.anexar_registro(registro_a_salvar)
+
+            bst.inserir(chave_composta_str, novo_num_linha)
+            return True
+        except ValueError as e:
+            print(f"Erro ao cadastrar diária: {e}")
+            return False
+
+    def buscar_diaria(self, cod_dia: str, cod_especialidade: str) -> list[str] | None:
+        NOME_TABELA = 'diarias'
+        io_manager = IO_TABELAS[NOME_TABELA]
+        bst = INDICES[NOME_TABELA]
+
+        chave_busca_str = f"{cod_dia}|{cod_especialidade}"
+
+        num_linha = bst.buscar(chave_busca_str)
+
+        if num_linha is None:
+            return None
+
+        return io_manager.ler_linha(num_linha)
+
+    def excluir_diaria(self, cod_dia: str, cod_especialidade: str) -> bool:
+        chave_busca_str = f"{cod_dia}|{cod_especialidade}"
+
+        return self.remover_fisicamente_registro('diarias', chave_busca_str)
+
