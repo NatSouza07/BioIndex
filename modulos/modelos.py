@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 
-@dataclass
 class Cidade:
-    cod_cidade: int
-    descricao: str
-    estado: str
+    def __init__(self, cod_cidade: int, descricao: str, estado: str):
+        self.cod_cidade = cod_cidade
+        self.descricao = descricao
+        self.estado = estado
+
+    def __repr__(self):
+        return f"Cidade(cod='{self.cod_cidade}', nome='{self.descricao}', UF='{self.estado}')"
+
+    def to_list(self) -> list[str]:
+        return [str(self.cod_cidade), self.descricao, self.estado]
 
 @dataclass
 class Paciente:
@@ -54,3 +60,4 @@ class Diaria:
     cod_dia: str
     cod_especialidade: int
     quantidade_consultas: int
+
