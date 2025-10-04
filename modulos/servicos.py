@@ -191,3 +191,53 @@ class GerenciadorServicos:
             "paciente_registro": registro,
         }
 
+    def consultar_paciente_completo(self, cod_paciente: str) -> dict | None:
+        registro_paciente_str = self.buscar_paciente(cod_paciente)
+
+        if not registro_paciente_str:
+            return None
+
+        try:
+            cod_cidade_fk = registro_paciente_str[5]
+            registro_cidade_str = self.lookup_cidade(cod_cidade_fk)
+
+            if registro_cidade_str:
+                nome_cidade = registro_cidade_str[1]
+                uf_cidade = registro_cidade_str[2]
+            else:
+                nome_cidade = "Cidade não encontrada! (Erro FK)"
+                uf_cidade = "N/A"
+
+        except IndexError:
+            nome_cidade = "Registro corrompido"
+            uf_cidade = "N/A"
+
+        try:
+            peso = float(registro_paciente_str[6])
+            altura = float(registro_paciente_str[7])
+
+            dados_imc = self.calcular_diagnostico_paciente(cod_paciente)
+
+            imc = dados_imc.get('imc')
+            diagnostico = dados_imc.get('diagnostico')
+
+        except (ValueError, IndexError):
+            imc = "N/A"
+            diagnostico = "Dados inválidos"
+
+        resultado = {
+            "cod_paciente": registro_paciente_str[0],
+            "nome": registro_paciente_str[1],
+            "data_nascimento": registro_paciente_str[2],
+            "endereco": registro_paciente_str[3],
+            "telefone": registro_paciente_str[4],
+            "cod_cidade_fk": cod_cidade_fk,
+            "nome_cidade": nome_cidade,
+            "uf_cidade": uf_cidade,
+            "peso": registro_paciente_str[6],
+            "altura": registro_paciente_str[7],
+            "imc": imc,
+            "diagnostico": diagnostico
+        }
+
+        return resultado
