@@ -471,3 +471,19 @@ class GerenciadorServicos:
 
         return resultado
 
+    def gerar_relatorio_consultas_ordenado(self) -> list[dict]:
+        NOME_TABELA = 'consultas'
+        bst = INDICES[NOME_TABELA]
+
+        codigos_ordenados = bst.in_order_traversal_keys()
+
+        relatorio_completo = []
+
+        for cod_consulta in codigos_ordenados:
+            dados_completos = self.consultar_consulta_completa(cod_consulta)
+
+            if dados_completos and "erro" not in dados_completos:
+                relatorio_completo.append(dados_completos)
+
+        return relatorio_completo
+

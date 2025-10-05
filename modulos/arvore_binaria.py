@@ -82,13 +82,15 @@ class ArvoreBinaria:
             no_atual = no_atual.esquerda
         return no_atual
 
-    def obter_dados_em_ordem(self) -> list[tuple[str, int]]:
-        lista_dados = []
-        self._percorrer_in_order(self.raiz, lista_dados)
-        return lista_dados
+    def in_order_traversal_keys(self) -> list[int]:
+        keys = []
+        self._percorrer_in_order_keys(self.raiz, keys)
+        return keys
 
-    def _percorrer_in_order(self, no_atual, lista_dados: list):
+    def _percorrer_in_order_keys(self, no_atual, keys_list: list[int]):
         if no_atual is None:
-            self.percorrer_in_order(no_atual.esquerda, lista_dados)
-            lista_dados.append((str(no_atual.chave), str(no_atual.num_linha)))
-            self.percorrer_in_order(no_atual.direita, lista_dados)
+            self._percorrer_in_order_keys(no_atual.esquerda, keys_list)
+
+            keys_list.append(no_atual.chave)
+
+            self._percorrer_in_order_keys(no_atual.direita, keys_list)
