@@ -317,3 +317,34 @@ class GerenciadorServicos:
             "valor_exame": valor_exame,
             "valor_total": valor_total,
         }
+
+    def validar_vagas(self, data: str, cod_especialidade: str) -> bool:
+        registro_especialidade = self.lookup.especialidade(cod_especialidade)
+
+        if not registro_especialidade:
+            print(f"Erro: Especialidade {cod_especialidade} não existe.")
+            return False
+
+        try:
+            limite_diario = int(registro_especialidade[3])
+        except (ValueError, IndexError):
+            print("Erro: Limite Diário da Especialidade corrompido")
+            return False
+
+        registro_diaria = self.buscar_diaria(data, cod_especialidade)
+
+        if not registro_diaria:
+            vagas_ocupadas = 0
+        else
+            try:
+                vagas_ocupadas = int(registro_diaria[2])
+            except (ValueError, IndexError):
+                print("Erro: Quantidade de Consultas da Diária corrompida")
+                return False
+
+        if vagas_ocupadas < limite_diario:
+            print(f"Vaga disponível: {vagas_ocupadas} de {limite_diario} agendadas.")
+            return True
+        else:
+            print(f"Limite atingido: {vagas_ocupadas} de {limite_diario} agendadas.")
+            return False
