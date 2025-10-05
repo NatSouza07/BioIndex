@@ -82,6 +82,16 @@ class Consulta:
     data: str
     hora: str
 
+    def to_list(self) -> list[str]:
+        return [
+            str(self.cod_consulta),
+            str(self.cod_paciente),
+            str(self.cod_medico),
+            str(self.cod_exame),
+            self.data,
+            self.hora,
+        ]
+
 @dataclass
 class Diaria:
     cod_dia: str

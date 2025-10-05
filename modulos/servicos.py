@@ -1,7 +1,7 @@
 from .gerenciador_io import GerenciadorTabela
 from .arvore_binaria import ArvoreBinaria
 from .gerenciador_io import CAMINHO_DADOS
-from .modelos import Paciente, Paciente
+from .modelos import Paciente, Paciente, Consulta
 from .import regras_negocio
 
 INDICES = {}
@@ -348,3 +348,71 @@ class GerenciadorServicos:
         else:
             print(f"Limite atingido: {vagas_ocupadas} de {limite_diario} agendadas.")
             return False
+
+    def cadastrar_consulta(self, consulta_obj: Consulta) -> bool:
+        NOME_TABELA = 'consultas'
+        io_manager = IO_TABELAS[NOME_TABELA]
+        bst = INDICES[NOME_TABELA]
+
+        registro_exame = self.lookup_exame(str(consulta_obj.cod_exame))
+
+        if not registro_exame:
+            print(f"Erro: Exame {consulta_obj.cod_exame} não encontrado.")
+            return False
+
+        cod_especialidade_para_vaga = registro_exame[2]
+
+        tem_vaga = self.validar_vagas(consulta_obj.data, cod_especialidade_para_vaga)
+
+        if not tem_vaga:
+            print("Agendamento recusado: Limite de consultas diárias atingido.")
+            return False
+
+        try:
+            chave = consulta_obj.cod_consulta
+
+            registro_a_salvar = consulta_obj.to_list()
+            novo_num_linha = io_manager.anexar_registro(registro_a_salvar)
+            bst.inserir(chave, novo_num_linha)
+
+            self.atualizar_diarias_mais_um(consulta_obj.data, cod_especialidade_para_vaga)
+
+            return True
+        except ValueError as e:
+            print(f"Erro ao cadastrar consulta: {e}")
+            return False
+
+    def excluir_consulta(self, cod_consulta: int) -> bool:
+        NOME_TABELA = 'consultas'
+        chave = cod_consulta
+
+        registro_consulta = self.buscar_consulta(chave)
+
+        if not registro_consulta:
+            print(f"Erro: Consulta com código {chave} não encotrada para exclusão.")
+            return False
+
+        cod_exame_fk = registro_consulta[3]
+        data_consulta = registro_consulta[4]
+
+        registro_exame = self.lookup_exame(cod_exame_fk)
+
+        if not registro_exame:
+            print("Erro: Exame da consulta não encontrado.")
+            return False
+
+        cod_especialidade_para_vaga = registro_exame[2]
+
+        removida_com_sucesso = self.remover_fisicamente_registro(NOME_TABELA, chave)
+
+        if not removida_com_sucesso:
+            print(f"Erro: Falha na remoção física da consulta {chave}")
+            return False
+
+        self.atualizar_diarias_menos_um(data_consulta, cod_especialidade_para_vaga)
+
+        return True
+
+    def buscar_consulta(self, cod_consulta: int) -> list[str] | None:
+        NOME_TABELA = 'consultas'
+        return self.buscar_registro_por_chave(NOME_TABELA, cod_consulta)
