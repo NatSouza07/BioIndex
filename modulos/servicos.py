@@ -416,3 +416,58 @@ class GerenciadorServicos:
     def buscar_consulta(self, cod_consulta: int) -> list[str] | None:
         NOME_TABELA = 'consultas'
         return self.buscar_registro_por_chave(NOME_TABELA, cod_consulta)
+
+    def consultar_consulta_completa(self, cod_consulta: int) -> dict | None:
+        registro_consulta_str = self.buscar_consulta(cod_consulta)
+
+        if not registro_consulta_str:
+            return None
+
+        cod_paciente_fk = registro_consulta_str[1]
+        cod_medico_fk = registro_consulta_str[2]
+        cod_exame_fk = registro_consulta_str[3]
+        data_consulta = registro_consulta_str[4]
+
+        dados_paciente_completo = self.consultar_paciente_completo(cod_paciente_fk)
+
+        if not dados_paciente_completo:
+            return {"Erro": "Paciente relacionado à consulta não encontrado."}
+
+        registro_exame = self.lookup_exame(cod_exame_fk)
+
+        if not registro_exame:
+            return {"Erro": "Exame relacionado à consulta não encontrado."}
+
+        descricao_exame = registro_exame[1]
+        cod_especialidade.fk = registro_exame[2]
+
+        registro_medico = self.lookup_medico(cod_medico_fk)
+
+        if not registro_medico:
+            return {"Erro": "Médico relacionado à consulta não encontrado."}
+
+        nome_medico = registro_medico[1]
+
+        dados_valor_total = self.calcular_valor_total_consulta_final(cod_especialidade_fk, cod_medico_fk)
+
+        resultado = {
+            "cod_consulta": registro_consulta_str[0],
+            "data": data_consulta,
+            "hora": registro_consulta_str[5],
+
+            "paciente_nome": dados_paciente_completo["nome"],
+            "paciente_cidade": dados_paciente_completo["nome_cidade"],
+            "paciente_uf": dados_paciente_completo["uf_cidade"],
+
+            "medico_nome": nome_medico,
+            "cod_medico": cod_medico_fk,
+
+            "exame_descricao": descricao_exame,
+            "cod_exame": cod_exame_fk,
+            "cod_especialidade": cod_especialidade_fk,
+
+            "valor_consulta_total": dados_valor_total["valor_total"]
+        }
+
+        return resultado
+
