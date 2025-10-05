@@ -283,3 +283,37 @@ class GerenciadorServicos:
 
         return self.remover_fisicamente_registro('diarias', chave_busca_str)
 
+    def calcular_valor_total_consulta_final(self, cod_especialidade: str, cod_exame: str) -> dict | None:
+        registro_especialidade = self.lookup_especialidade(cod_especialidade)
+
+        if not registro_especialidade:
+            print(f"Erro: Especialidade {cod_especialidade} não encontrada.")
+            return None
+
+        try:
+            valor_especialidade = float(registro_especialidade[2])
+        except (ValueError, IndexError):
+            print("Erro: Valor da Especialidade está corrompido")
+            return None
+
+        registro_exame = self.lookup_exame {cod_exame}
+
+        if not registro_exame:
+            print(f"Erro: Exame {cod_exame} não encontrado.")
+            return None
+
+        try:
+            valor_exame = float(registro_exame[3])
+        except (ValueError, IndexError):
+            print("Erro: Valor da Exame corrompido")
+            return None
+
+        valor_total = regras_negocio.calcular_valor_total_consulta(valor_especialidade, valor_exame)
+
+        return {
+            "cod_especialidade": cod_especialidade,
+            "cod_exame": cod_exame,
+            "valor_especialidade": valor_especialidade,
+            "valor_exame": valor_exame,
+            "valor_total": valor_total,
+        }

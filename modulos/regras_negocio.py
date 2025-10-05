@@ -15,3 +15,6 @@ def diagnostico_imc(imc: float) -> str:
         return "Sobrepeso"
     else:
         return "Obesidade"
+
+def calcular_valor_total_consulta(valor_especialidade: float, valor_exame: float) -> float:
+    return round(valor_especialidade * valor_exame, 2)
