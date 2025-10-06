@@ -1,15 +1,13 @@
 import flet as ft
 from pathlib import Path
-# import modulos.servicos as servicos
-# from modulos.servicos import GerenciadorServicos
 
-# GERENCIADOR = GerenciadorServicos()
 CAMINHO_DADOS = Path("dados")
+
 
 def inicializar_estruturas_dados():
     CAMINHO_DADOS.mkdir(exist_ok=True)
 
-    arquivos_necessarios= [
+    arquivos_necessarios = [
         "cidades.txt",
         "pacientes.txt",
         "especialidades.txt",
@@ -21,10 +19,206 @@ def inicializar_estruturas_dados():
     ]
 
     for nome_arquivo in arquivos_necessarios:
-        caminho_arquivo= CAMINHO_DADOS / nome_arquivo
+        caminho_arquivo = CAMINHO_DADOS / nome_arquivo
         if not caminho_arquivo.exists():
             caminho_arquivo.touch()
             print(f"Arquivo de dados '{caminho_arquivo}' criado.")
+
+
+def TemplateDataTable():
+    white_text_style = ft.TextStyle(color=ft.Colors.WHITE)
+
+    return ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("ID", style=white_text_style)),
+            ft.DataColumn(ft.Text("Nome", style=white_text_style), numeric=False),
+            ft.DataColumn(ft.Text("CPF", style=white_text_style)),
+            ft.DataColumn(ft.Text("Status", style=white_text_style)),
+            ft.DataColumn(ft.Text("Ações", style=white_text_style)),
+        ],
+        rows=[],
+        show_bottom_border=True,
+        heading_row_color=ft.Colors.BLUE_GREY_700,
+        data_row_color={
+            "default": ft.Colors.BLUE_GREY_700,
+            "hovered": ft.Colors.BLUE_GREY_600,
+        },
+        data_row_min_height=40,
+        data_row_max_height=40,
+    )
+
+def TemplateFormulario():
+    label_color = ft.Colors.BLACK54
+    focused_color = ft.Colors.BLUE_900
+
+    def get_text_field(label, hint_text, expand=None):
+        return ft.TextField(
+            label=label,
+            hint_text=hint_text,
+            border_radius=5,
+            height=45,
+            content_padding=10,
+            bgcolor=ft.Colors.WHITE,
+            color=ft.Colors.BLACK,
+            label_style=ft.TextStyle(color=label_color),
+            focused_border_color=focused_color,
+            cursor_color=focused_color,
+            expand=expand
+        )
+
+    def get_dropdown(label, options, expand=None):
+        return ft.Dropdown(
+            label=label,
+            options=options,
+            border_radius=5,
+            content_padding=10,
+            bgcolor=ft.Colors.WHITE,
+            color=ft.Colors.BLACK,
+            label_style=ft.TextStyle(color=label_color),
+            focused_border_color=focused_color,
+            expand=expand
+        )
+
+    return ft.Column(
+        [
+            ft.Text("Detalhes / Edição do Paciente", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+
+            get_text_field(label="Nome Completo", hint_text="Digite o nome do paciente"),
+            get_text_field(label="CPF", hint_text="000.000.000-00"),
+
+            ft.Row(
+                [
+                    get_text_field(label="Data de Nascimento", hint_text="DD/MM/AAAA", expand=1),
+                    get_dropdown(
+                        label="Status",
+                        expand=1,
+                        options=[
+                            ft.dropdown.Option("Ativo"),
+                            ft.dropdown.Option("Inativo"),
+                        ]
+                    ),
+                ],
+                spacing=10
+            ),
+
+            get_dropdown(
+                label="Cidade (Lookup)",
+                options=[
+                    ft.dropdown.Option("São Paulo"),
+                    ft.dropdown.Option("Rio de Janeiro"),
+                ]
+            ),
+
+            ft.Divider(height=20, thickness=1, color=ft.Colors.BLUE_GREY_500),
+
+            ft.Row([
+                ft.ElevatedButton(text="Salvar", icon=ft.Icons.SAVE, bgcolor=ft.Colors.GREEN_700,
+                                  color=ft.Colors.WHITE,
+                                  style=ft.ButtonStyle(padding=ft.padding.only(left=20, right=20))),
+                ft.OutlinedButton(
+                    text="Cancelar",
+                    icon=ft.Icons.CANCEL,
+                    style=ft.ButtonStyle(
+                        padding=ft.padding.only(left=20, right=20),
+                        color=ft.Colors.WHITE,
+                        side=ft.BorderSide(1, ft.Colors.WHITE)
+                    )
+                ),
+            ], alignment=ft.MainAxisAlignment.END, spacing=10)
+        ],
+        spacing=15
+    )
+
+
+def pacientes_view(page: ft.Page):
+    barra_pesquisa = ft.TextField(
+        hint_text="Pesquisar por Nome, CPF ou ID...",
+        prefix_icon=ft.Icons.SEARCH,
+        border_radius=5,
+        height=40,
+        content_padding=10,
+        bgcolor=ft.Colors.BLUE_GREY_600,
+        color=ft.Colors.WHITE,
+        border_color=ft.Colors.BLUE_GREY_500,
+        focused_border_color=ft.Colors.WHITE,
+        cursor_color=ft.Colors.WHITE,
+    )
+
+    coluna_lista = ft.Column(
+        [
+            ft.Row(
+                [
+                    ft.Text("Lista de Pacientes", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+                    ft.ElevatedButton(
+                        text="Adicionar Novo",
+                        icon=ft.Icons.ADD,
+                        bgcolor=ft.Colors.BLUE_700,
+                        color=ft.Colors.WHITE,
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            ),
+
+            barra_pesquisa,
+
+            ft.Container(
+                content=TemplateDataTable(),
+                expand=True,
+            )
+        ],
+        spacing=15,
+        expand=True,
+    )
+
+    lista_pacientes = ft.Container(
+        content=coluna_lista,
+        padding=20,
+        margin=ft.margin.only(right=10),
+        bgcolor=ft.Colors.BLUE_GREY_700,
+        border_radius=10,
+        expand=True,
+    )
+
+    formulario_paciente = ft.Container(
+        content=TemplateFormulario(),
+        padding=20,
+        margin=ft.margin.only(left=10),
+        bgcolor=ft.Colors.BLUE_GREY_700,
+        border_radius=10,
+        expand=True,
+    )
+
+    conteudo_principal = ft.Row(
+        [
+            ft.Container(content=lista_pacientes, expand=6),
+            ft.Container(content=formulario_paciente, expand=4),
+        ],
+        expand=True,
+        vertical_alignment=ft.CrossAxisAlignment.STRETCH,
+    )
+
+    container_view_body = ft.Container(
+        content=conteudo_principal,
+        expand=True,
+        padding=ft.padding.only(left=20, right=20, top=20, bottom=20),
+    )
+
+    return ft.View(
+        "/pacientes",
+        [
+            ft.AppBar(
+                title=ft.Text("Gerenciamento de Pacientes"),
+                bgcolor=ft.Colors.BLUE_GREY_700,
+                leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda e: page.go("/")),
+                leading_width=60,
+            ),
+
+            container_view_body
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        bgcolor="#fafafa"
+    )
+
 
 class ViewManager:
     def __init__(self, page: ft.Page):
@@ -55,7 +249,7 @@ class ViewManager:
                         ft.Text("Pacientes", size=12, color=ft.Colors.BLUE_700)
                     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0,
                         alignment=ft.MainAxisAlignment.START),
-                    padding=ft.padding.only(right=15, bottom= 10)
+                    padding=ft.padding.only(right=15, bottom=10)
                 ),
 
                 ft.Container(
@@ -66,7 +260,7 @@ class ViewManager:
                         ft.Text("Agenda", size=12, color=ft.Colors.BLUE_700)
                     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0,
                         alignment=ft.MainAxisAlignment.START),
-                    padding=ft.padding.only(right=15, bottom= 10)
+                    padding=ft.padding.only(right=15, bottom=10)
                 ),
 
                 ft.Container(
@@ -77,7 +271,7 @@ class ViewManager:
                         ft.Text("Relatório", size=12, color=ft.Colors.BLUE_700)
                     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0,
                         alignment=ft.MainAxisAlignment.START),
-                    padding=ft.padding.only(right=15, bottom= 10)
+                    padding=ft.padding.only(right=15, bottom=10)
                 ),
             ],
             spacing=0,
@@ -130,20 +324,7 @@ class ViewManager:
         self.page.views.append(menu_principal_view)
 
         if self.page.route == "/pacientes":
-            self.page.views.append(
-                ft.View(
-                    "/pacientes",
-                    [
-                        ft.AppBar(title=ft.Text("CRUD Pacientes"), bgcolor=ft.Colors.BLUE_GREY_700),
-                        ft.ElevatedButton("Voltar ao Menu", on_click=lambda e: self.page.go("/")),
-                        ft.Container(
-                            content=ft.Text("TELA CRUD PACIENTES (A ser desenvolvida)", size=18),
-                            padding=20
-                        ),
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                )
-            )
+            self.page.views.append(pacientes_view(self.page))
 
         self.page.update()
 
@@ -152,16 +333,17 @@ class ViewManager:
         top_view = self.page.views[-1]
         self.page.go(top_view.route)
 
+
 def main(page: ft.Page):
+    inicializar_estruturas_dados()
     ViewManager(page)
 
-if __name__ == '__main__':
 
-    print("Inicializando: Verificando estrutura de  arquivos...")
+if __name__ == '__main__':
+    print("Inicializando: Verificando estrutura de arquivos...")
     inicializar_estruturas_dados()
 
-    print ("Inicializando: Carregando dados e construindo índices em memória...")
-   #servicos.carregar_indices_inicais()
+    print("Inicializando: Carregando dados e construindo índices em memória...")
 
     print("Inicializando: Interface gráfica pronta.")
-    ft.app(target=main, assets_dir= "assets")
+    ft.app(target=main, assets_dir="assets")
