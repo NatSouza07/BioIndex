@@ -1,7 +1,7 @@
 from .gerenciador_io import GerenciadorTabela
 from .arvore_binaria import ArvoreBinaria
 from .gerenciador_io import CAMINHO_DADOS
-from .modelos import Paciente, Paciente, Consulta
+from .modelos import Paciente, Consulta
 from .import regras_negocio
 
 INDICES = {}
@@ -75,7 +75,7 @@ class GerenciadorServicos:
             chave_primaria_int = cidade_obj.cod_cidade
             bst.inserir(chave_primaria_int, novo_num_linha)
             return True
-        except ValueError as 0:
+        except ValueError as e:
             print(f"Erro ao cadastrar cidade: {e}")
             return False
 
@@ -296,7 +296,7 @@ class GerenciadorServicos:
             print("Erro: Valor da Especialidade está corrompido")
             return None
 
-        registro_exame = self.lookup_exame {cod_exame}
+        registro_exame = self.lookup_exame(cod_exame)
 
         if not registro_exame:
             print(f"Erro: Exame {cod_exame} não encontrado.")
@@ -335,7 +335,7 @@ class GerenciadorServicos:
 
         if not registro_diaria:
             vagas_ocupadas = 0
-        else
+        else:
             try:
                 vagas_ocupadas = int(registro_diaria[2])
             except (ValueError, IndexError):
