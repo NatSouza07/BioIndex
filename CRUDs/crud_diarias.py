@@ -39,39 +39,3 @@ class CrudDiarias:
 
     def ler_diarias_exaustivamente(self) -> list[list[str]]:
         return self.io_manager.ler_todos()
-
-    def atualizar_vagas_mais_um(self, cod_dia: str, cod_especialidade: str):
-        diaria = self.buscar_diaria(cod_dia, cod_especialidade)
-
-        if not diaria:
-            print("Erro: Diária não encontrada para atualizar vagas")
-            return False
-
-        try:
-            vagas_atual = int(diaria[2])
-
-        except (ValueError, IndexError):
-            vagas_atual = 0
-
-        diaria[2] = str(vagas_atual + 1)
-        self.io_manager.reescrever_arquivo_completo(self.io_manager.ler_todos())
-        self.servicos.carregar_indices_iniciais()
-        return True
-
-    def atualizar_vagas_menos_um(self, cod_dia: str, cod_especialidade: str):
-        diaria = self.buscar_diaria(cod_dia, cod_especialidade)
-
-        if not diaria:
-            print("Erro: Diária não encontrada para atualizar vagas")
-            return False
-
-        try:
-            vagas_atual = int(diaria[2])
-
-        except (ValueError, IndexError):
-            vagas_atual = 0
-
-        diaria[2] = str(max(vagas_atual - 1, 0))
-        self.io_manager.reescrever_arquivo_completo(self.io_manager.ler_todos())
-        self.servicos.carregar_indices_iniciais()
-        return True

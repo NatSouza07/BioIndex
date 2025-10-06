@@ -7,23 +7,23 @@ class Cidade:
         self.estado = estado
 
     def __repr__(self):
-        return f"Cidade(cod='{self.cod_cidade}', nome='{self.descricao}', UF='{self.estado}')"
+        return (f"Cidade(cod='{self.cod_cidade}', "
+                f"nome='{self.descricao}', "
+                f"UF='{self.estado}')")
 
     def to_list(self) -> list[str]:
         return [str(self.cod_cidade), self.descricao, self.estado]
 
 class Paciente:
-    def __init__ (self,
-                  cod_paciente: int,
-                  nome: str,
-                  data_nascimento: str,
-                  endereco: str,
-                  telefone: str,
-                  cod_cidade: int,
-                  peso: float,
-                  altura: float
-                  ):
-
+    def __init__(self,
+                 cod_paciente: int,
+                 nome: str,
+                 data_nascimento: str,
+                 endereco: str,
+                 telefone: str,
+                 cod_cidade: int,
+                 peso: float,
+                 altura: float):
         self.cod_paciente = cod_paciente
         self.nome = nome
         self.data_nascimento = data_nascimento
@@ -34,9 +34,15 @@ class Paciente:
         self.altura = altura
 
     def __repr__(self):
-        return (f"Paciente(cod={self.cod_paciente}, nome={self.nome}, nascimento={self.data_nascimento}, "
-                f"endereco={self.endereco}, telefone={self.telefone}), FK_Cidade={self.cod_cidade}), "
-                f"peso={self.peso}, altura={self.altura})")
+        return (f"Paciente(cod={self.cod_paciente}, "
+                f"nome={self.nome}, "
+                f"nascimento={self.data_nascimento}, "
+                f"endereco={self.endereco}, "
+                f"telefone={self.telefone}, "
+                f"FK_Cidade={self.cod_cidade}, "
+                f"peso={self.peso}, "
+                f"altura={self.altura})"
+        )
 
     def to_list(self) -> list[str]:
         return [
@@ -57,6 +63,14 @@ class Especialidade:
     valor_consulta: float
     limite_diario: int
 
+    def to_list(self) -> list[str]:
+        return [
+            str(self.cod_especialidade),
+            self.descricao,
+            str(self.valor_consulta),
+            str(self.limite_diario),
+        ]
+
 @dataclass
 class Medico:
     cod_medico: int
@@ -66,12 +80,30 @@ class Medico:
     cod_cidade: int
     cod_especialidade: int
 
+    def to_list(self) -> list[str]:
+        return [
+            str(self.cod_medico),
+            self.nome,
+            self.endereco,
+            self.telefone,
+            str(self.cod_cidade),
+            str(self.cod_especialidade),
+        ]
+
 @dataclass
 class Exame:
     cod_exame: int
     descricao: str
     cod_especialidade: int
     valor_exame: float
+
+    def to_list(self) -> list[str]:
+        return [
+            str(self.cod_exame),
+            self.descricao,
+            str(self.cod_especialidade),
+            str(self.valor_exame),
+        ]
 
 @dataclass
 class Consulta:

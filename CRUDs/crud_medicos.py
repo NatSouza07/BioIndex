@@ -52,3 +52,4 @@ class CrudMedicos:
 
     def ler_medicos_exaustivamente(self) -> list[list[str]]:
         return self.io_manager.ler_todos()
+

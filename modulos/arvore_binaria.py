@@ -89,8 +89,10 @@ class ArvoreBinaria:
 
     def _percorrer_in_order_keys(self, no_atual, keys_list: list[int]):
         if no_atual is None:
-            self._percorrer_in_order_keys(no_atual.esquerda, keys_list)
+            return
 
-            keys_list.append(no_atual.chave)
+        self._percorrer_in_order_keys(no_atual.esquerda, keys_list)
 
-            self._percorrer_in_order_keys(no_atual.direita, keys_list)
+        keys_list.append(no_atual.chave)
+
+        self._percorrer_in_order_keys(no_atual.direita, keys_list)

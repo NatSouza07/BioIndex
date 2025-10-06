@@ -11,7 +11,7 @@ class CrudPacientes:
     def cadastrar_paciente(self, paciente_obj: Paciente) -> bool:
         cod_cidade_fk = str(paciente_obj.cod_cidade)
 
-        if not self.lookup_cidade(cod_cidade_fk):
+        if not self.servicos.lookup_cidade(cod_cidade_fk):
             print(f"Erro FK: Código de cidade '{cod_cidade_fk}' não encontrado")
             return False
 
@@ -75,9 +75,11 @@ class CrudPacientes:
         if not registro:
             return None
 
+        cod_cidade_fk = "N/A"
+
         try:
             cod_cidade_fk = registro[5]
-            registro_cidade = self.lookup_cidade(cod_cidade_fk)
+            registro_cidade = self.servicos.lookup_cidade(cod_cidade_fk)
             nome_cidade = registro_cidade[1] if registro_cidade else "Cidade não encontrada! (Erro FK)"
             uf_cidade = registro_cidade[2] if registro_cidade else "N/A"
 
@@ -103,6 +105,3 @@ class CrudPacientes:
             "imc": imc,
             "diagnostico": diagnostico
         }
-
-    def lookup_cidade(self, cod_cidade_fk: str) -> list[str] | None:
-        return self.servicos.crud_cidades.lookup_cidade(cod_cidade_fk)

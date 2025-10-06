@@ -9,7 +9,7 @@ class CrudConsultas:
         self.bst = servicos.INDICES.get(self.NOME_TABELA)
 
     def cadastrar_consulta(self, consulta_obj: Consulta) -> bool:
-        registro_exame = self.lookup_exame(str(consulta_obj.cod_exame))
+        registro_exame = self.servicos.lookup_paciente(str(consulta_obj.cod_exame))
 
         if not registro_exame:
             print(f"Erro: Exame {consulta_obj.cod_exame} não encontrado.")
@@ -29,7 +29,7 @@ class CrudConsultas:
             novo_num_linha = self.io_manager.anexar_registro(registro_a_salvar)
             self.bst.inserir(chave, novo_num_linha)
 
-            self.atualizar_diarias_mais_um(consulta_obj.data, cod_especialidade_para_vaga)
+            self.servicos.atualizar_diarias_mais_um(consulta_obj.data, cod_especialidade_para_vaga)
 
             return True
 
@@ -47,7 +47,7 @@ class CrudConsultas:
         cod_exame_fk = registro_consulta[3]
         data_consulta = registro_consulta[4]
 
-        registro_exame = self.lookup_exame(cod_exame_fk)
+        registro_exame = self.servicos.lookup_exame(cod_exame_fk)
 
         if not registro_exame:
             print("Erro: Exame da consulta não encontrado.")
@@ -61,7 +61,7 @@ class CrudConsultas:
             print(f"Erro: Falha na remoção física da consulta {cod_consulta}")
             return False
 
-        self.atualizar_diarias_menos_um(data_consulta, cod_especialidade_para_vaga)
+        self.servicos.atualizar_diarias_menos_um(data_consulta, cod_especialidade_para_vaga)
         return True
 
     def buscar_consulta(self, cod_consulta: int) -> list[str] | None:
@@ -83,12 +83,12 @@ class CrudConsultas:
         cod_exame_fk = registro_consulta[3]
         data_consulta = registro_consulta[4]
 
-        dados_paciente = self.consultar_paciente_completo(cod_paciente_fk)
+        dados_paciente = self.servicos.lookup_paciente(cod_paciente_fk)
 
         if not dados_paciente:
             return {"Erro": "Paciente relacionado à consulta não encontrado."}
 
-        registro_exame = self.lookup_exame(cod_exame_fk)
+        registro_exame = self.servicos.lookup_exame(cod_exame_fk)
 
         if not registro_exame:
             return {"Erro": "Exame relacionado à consulta não encontrado."}
@@ -96,7 +96,7 @@ class CrudConsultas:
         descricao_exame = registro_exame[1]
         cod_especialidade_fk = registro_exame[2]
 
-        registro_medico = self.lookup_medico(cod_medico_fk)
+        registro_medico = self.servicos.lookup_medico(cod_medico_fk)
 
         if not registro_medico:
             return {"Erro": "Médico relacionado à consulta não encontrado."}
@@ -133,7 +133,7 @@ class CrudConsultas:
         return relatorio
 
     def calcular_valor_total_consulta_final(self, cod_especialidade: str, cod_exame: str) -> dict | None:
-        registro_especialidade = self.lookup_especialidade(cod_especialidade)
+        registro_especialidade = self.servicos.lookup_especialidade(cod_especialidade)
 
         if not registro_especialidade:
             print(f"Erro: Especialidade {cod_especialidade} não encontrada.")
@@ -146,7 +146,7 @@ class CrudConsultas:
             print("Erro: Valor da Especialidade está corrompido")
             return None
 
-        registro_exame = self.lookup_exame(cod_exame)
+        registro_exame = self.servicos.lookup_exame(cod_exame)
 
         if not registro_exame:
             print(f"Erro: Exame {cod_exame} não encontrado.")

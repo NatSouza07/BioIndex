@@ -45,21 +45,3 @@ class CrudCidades:
 
     def ler_cidades_exaustivamente(self) -> list[list[str]]:
         return self.io_manager.ler_todos()
-
-
-    def lookup_cidade(self, cod_cidade_fk: str) -> list[str] | None:
-
-        try:
-            chave_busca_int = int(cod_cidade_fk)
-
-        except ValueError:
-            return None
-
-        num_linha = self.bst.buscar(chave_busca_int)
-
-        if num_linha is None:
-            return None
-
-        registro_cidade = self.io_manager.ler_linha(num_linha)
-
-        return registro_cidade
