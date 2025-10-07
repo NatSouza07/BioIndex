@@ -1,3 +1,5 @@
+from typing import Dict,Any,Optional
+
 from modulos.modelos import Medico
 
 class CrudMedicos:
@@ -46,6 +48,34 @@ class CrudMedicos:
             return None
 
         return self.io_manager.ler_linha(num_linha)
+
+    def consultar_completo(self, cod_medico: str) -> Optional[Dict[str, Any]]:
+
+        registro_medico = self.buscar_medico(cod_medico)
+
+        if registro_medico is None:
+            return None
+        cod_cidade_fk=registro_medico[4]
+        cod_especialidade_fk=registro_medico[5]
+
+        registro_cidade = self.servicos.lookup_cidade(cod_cidade_fk)
+        registro_especialidade = self.servicos.lookup_especialidade(cod_especialidade_fk)
+
+        resultado_completo = {
+            "codigo": int(registro_medico[0]),
+            "nome": registro_medico[1],
+            "endereco": registro_medico[2],
+            "telefone": registro_medico[3],
+
+            "cidade_nome": registro_cidade[1] if registro_cidade else "Cidade não encontrada",
+            "cidade_estado": registro_cidade[2] if registro_cidade else "N/A",
+
+            "especialidade_desc": registro_especialidade[1] if registro_especialidade else "Especialidade não encontrada",
+            "especialidade_valor": float(registro_especialidade[2]) if registro_especialidade else 0.0,
+            "especialidade_limite": int(registro_especialidade[3]) if registro_especialidade else 0
+
+        }
+        return resultado_completo
 
     def excluir_medico(self, cod_medico: str) -> bool:
         return self.servicos.remover_fisicamente_registro(self.NOME_TABELA, cod_medico)

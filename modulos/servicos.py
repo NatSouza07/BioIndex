@@ -1,8 +1,10 @@
+from typing import Optional, List, Dict, Any
 from modulos.gerenciador_io import GerenciadorTabela
 from modulos.arvore_binaria import ArvoreBinaria
 
-INDICES = {}
-IO_TABELAS = {}
+INDICES: Dict[str, ArvoreBinaria] = {}
+IO_TABELAS: Dict[str, GerenciadorTabela] = {}
+
 
 class GerenciadorServicos:
     def __init__(self):
@@ -12,7 +14,7 @@ class GerenciadorServicos:
         from CRUDs.crud_pacientes import CrudPacientes
         from CRUDs.crud_especialidades import CrudEspecialidades
         from CRUDs.crud_medicos import CrudMedicos
-        #from CRUDs.crud_exames import CrudExames
+        from CRUDs.crud_exames import CrudExames
         from CRUDs.crud_consultas import CrudConsultas
         from CRUDs.crud_diarias import CrudDiarias
 
@@ -20,23 +22,17 @@ class GerenciadorServicos:
         self.crud_pacientes = CrudPacientes(self)
         self.crud_especialidades = CrudEspecialidades(self)
         self.crud_medicos = CrudMedicos(self)
-        #self.crud_exames = CrudExames(self)
+        self.crud_exames = CrudExames(self)
         self.crud_diarias = CrudDiarias(self)
         self.crud_consultas = CrudConsultas(self)
 
-        # Disponibilizar regras de negócio
         import modulos.regras_negocio as regras_negocio
         self.regras_negocio = regras_negocio
 
     def _inicializar_gerenciadores(self):
         arquivos_indexados = [
-            "cidades.txt",
-            "pacientes.txt",
-            "especialidades.txt",
-            "medicos.txt",
-            "exames.txt",
-            "consultas.txt",
-            "diarias.txt",
+            "cidades.txt", "pacientes.txt", "especialidades.txt",
+            "medicos.txt", "exames.txt", "consultas.txt", "diarias.txt",
         ]
 
         for nome_arquivo in arquivos_indexados:
@@ -53,8 +49,12 @@ class GerenciadorServicos:
             registros = io_manager.ler_todos()
 
             for num_linha, registro_dados in enumerate(registros, 1):
-                chave_primaria = registro_dados[0]
-                INDICES[nome_tabela].inserir(chave_primaria, num_linha)
+                try:
+                    chave_primaria_int = int(registro_dados[0])
+                    INDICES[nome_tabela].inserir(chave_primaria_int, num_linha)
+                except (ValueError, IndexError):
+                    print(
+                        f"Aviso: Linha inválida ou chave não numérica no arquivo {nome_tabela}.txt, linha {num_linha - 1}. Ignorando.")
 
     def remover_fisicamente_registro(self, nome_tabela: str, chave: str) -> bool:
         io_manager = IO_TABELAS.get(nome_tabela)
@@ -62,114 +62,117 @@ class GerenciadorServicos:
             return False
 
         registros_atuais = io_manager.ler_todos()
-        registros_mantidos = []
-        registro_removido_encontrado = False
+        registros_mantidos = [reg for reg in registros_atuais if reg[0] != chave]
 
-        for registro in registros_atuais:
-            if registro[0] != chave:
-                registros_mantidos.append(registro)
-            else:
-                registro_removido_encontrado = True
-
-        if not registro_removido_encontrado:
+        if len(registros_mantidos) == len(registros_atuais):
             return False
 
         io_manager.reescrever_arquivo_completo(registros_mantidos)
         self.carregar_indices_iniciais()
         return True
 
-    def lookup_cidade(self, cod_cidade: str) -> list[str] | None:
+    def lookup_cidade(self, cod_cidade: str) -> Optional[List[str]]:
         try:
             chave_busca_int = int(cod_cidade)
-
         except ValueError:
             return None
-
-        num_linha = self.INDICES['cidades'].buscar(chave_busca_int)
-
+        num_linha = INDICES['cidades'].buscar(chave_busca_int)
         if num_linha is None:
             return None
+        return IO_TABELAS['cidades'].ler_linha(num_linha)
 
-        registro_cidade = self.IO_TABELAS['cidades'].ler_linha(num_linha)
-        return registro_cidade
-
-    def lookup_paciente(self, cod_paciente: str) -> list[str] | None:
+    def lookup_paciente(self, cod_paciente: str) -> Optional[List[str]]:
         try:
             chave_busca_int = int(cod_paciente)
-
         except ValueError:
             return None
-
-        num_linha = self.INDICES['pacientes'].buscar(chave_busca_int)
-
+        num_linha = INDICES['pacientes'].buscar(chave_busca_int)
         if num_linha is None:
             return None
+        return IO_TABELAS['pacientes'].ler_linha(num_linha)
 
-        registro_paciente = self.IO_TABELAS['pacientes'].ler_linha(num_linha)
-        return registro_paciente
-
-    def lookup_medico(self, cod_medico: str) -> list[str] | None:
+    def lookup_medico(self, cod_medico: str) -> Optional[List[str]]:
         try:
             chave_busca_int = int(cod_medico)
-
         except ValueError:
             return None
-
-        num_linha = self.INDICES['medicos'].buscar(chave_busca_int)
-
+        num_linha = INDICES['medicos'].buscar(chave_busca_int)
         if num_linha is None:
             return None
+        return IO_TABELAS['medicos'].ler_linha(num_linha)
 
-        registro_medico = self.IO_TABELAS['medicos'].ler_linha(num_linha)
-        return registro_medico
+    def lookup_exame(self, cod_exame: str) -> Optional[List[str]]:
+        try:
+            chave_busca_int = int(cod_exame)
+        except ValueError:
+            return None
+        num_linha = INDICES['exames'].buscar(chave_busca_int)
+        if num_linha is None:
+            return None
+        return IO_TABELAS['exames'].ler_linha(num_linha)
 
-    def lookup_especialidade(self, cod_especialidade: str) -> list[str] | None:
+    def lookup_especialidade(self, cod_especialidade: str) -> Optional[List[str]]:
         try:
             chave_busca_int = int(cod_especialidade)
-
         except ValueError:
             return None
-
-        num_linha = self.INDICES['especialidades'].buscar(chave_busca_int)
-
+        num_linha = INDICES['especialidades'].buscar(chave_busca_int)
         if num_linha is None:
             return None
+        return IO_TABELAS['especialidades'].ler_linha(num_linha)
 
-        registro_especialidade = self.IO_TABELAS['especialidades'].ler_linha(num_linha)
-        return registro_especialidade
+    def buscar_diaria(self, cod_dia: str, cod_especialidade: str) -> Optional[List[str]]:
+        io_manager_diarias = IO_TABELAS['diarias']
+        todos_registros = io_manager_diarias.ler_todos()
+        for registro in todos_registros:
+            if registro[0] == cod_dia and registro[1] == str(cod_especialidade):
+                return registro
+        return None
 
-    def atualizar_vagas_mais_um(self, cod_dia: str, cod_especialidade: str):
-        diaria = self.buscar_diaria(cod_dia, cod_especialidade)
+    def atualizar_vagas_mais_um(self, cod_dia: str, cod_especialidade: str) -> bool:
+        io_manager_diarias = IO_TABELAS.get('diarias')
+        if not io_manager_diarias: return False
+        todos_registros = io_manager_diarias.ler_todos()
+        registro_encontrado = False
 
-        if not diaria:
-            print("Erro: Diária não encontrada para atualizar vagas")
-            return False
+        for registro in todos_registros:
+            if registro[0] == cod_dia and registro[1] == str(cod_especialidade):
+                try:
+                    vagas_atual = int(registro[2])
+                except (ValueError, IndexError):
+                    vagas_atual = 0
+                registro[2] = str(vagas_atual + 1)
+                registro_encontrado = True
+                break
 
-        try:
-            vagas_atual = int(diaria[2])
+        if not registro_encontrado:
+            novo_registro_diaria = [cod_dia, str(cod_especialidade), '1']
+            todos_registros.append(novo_registro_diaria)
 
-        except (ValueError, IndexError):
-            vagas_atual = 0
-
-        diaria[2] = str(vagas_atual + 1)
-        self.io_manager.reescrever_arquivo_completo(self.io_manager.ler_todos())
-        self.servicos.carregar_indices_iniciais()
+        io_manager_diarias.reescrever_arquivo_completo(todos_registros)
+        self.carregar_indices_iniciais()
         return True
 
-    def atualizar_vagas_menos_um(self, cod_dia: str, cod_especialidade: str):
-        diaria = self.buscar_diaria(cod_dia, cod_especialidade)
+    def atualizar_vagas_menos_um(self, cod_dia: str, cod_especialidade: str) -> bool:
+        io_manager_diarias = IO_TABELAS.get('diarias')
+        if not io_manager_diarias: return False
+        todos_registros = io_manager_diarias.ler_todos()
+        registro_encontrado = False
 
-        if not diaria:
-            print("Erro: Diária não encontrada para atualizar vagas")
+        for registro in todos_registros:
+            if registro[0] == cod_dia and registro[1] == str(cod_especialidade):
+                try:
+                    vagas_atual = int(registro[2])
+                except (ValueError, IndexError):
+                    vagas_atual = 0
+                registro[2] = str(max(vagas_atual - 1, 0))
+                registro_encontrado = True
+                break
+
+        if not registro_encontrado:
+            print(f"Aviso: Diária para {cod_dia}/{cod_especialidade} não encontrada para decrementar.")
             return False
 
-        try:
-            vagas_atual = int(diaria[2])
-
-        except (ValueError, IndexError):
-            vagas_atual = 0
-
-        diaria[2] = str(max(vagas_atual - 1, 0))
-        self.io_manager.reescrever_arquivo_completo(self.io_manager.ler_todos())
-        self.servicos.carregar_indices_iniciais()
+        io_manager_diarias.reescrever_arquivo_completo(todos_registros)
+        self.carregar_indices_iniciais()
         return True
