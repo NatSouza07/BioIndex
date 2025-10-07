@@ -1,16 +1,13 @@
-# CRUDs/crud_consultas.py
-
-from modulos.modelos import Consulta
-from servicos import GerenciadorServicos
 from typing import Optional, List, Dict, Any
+from modulos.modelos import Consulta
 
 class CrudConsultas:
-    NOME_TABELA = 'consultas'
+    NOME_TABELA = "consultas"
 
-    def __init__(self, servicos: GerenciadorServicos):
+    def __init__(self, servicos):
         self.servicos = servicos
-        self.io_manager = servicos.IO_TABELAS.get(self.NOME_TABELA)
-        self.bst = servicos.INDICES.get(self.NOME_TABELA)
+        self.io_manager = servicos.io_tabelas.get(self.NOME_TABELA)
+        self.bst = servicos.indices.get(self.NOME_TABELA)
 
     def cadastrar_consulta(self, consulta_obj: Consulta) -> bool:
         registro_exame = self.servicos.lookup_exame(str(consulta_obj.cod_exame))
@@ -20,28 +17,30 @@ class CrudConsultas:
 
         cod_especialidade_para_vaga = registro_exame[2]
 
-        tem_vaga = self.servicos.validar_vagas(consulta_obj.data, cod_especialidade_para_vaga)
-        if not tem_vaga:
+        if not self.servicos.validar_vagas(consulta_obj.data, cod_especialidade_para_vaga):
             print("Agendamento recusado: Limite de consultas diárias atingido para esta especialidade.")
             return False
 
         try:
-            chave = consulta_obj.codigo
+            chave = consulta_obj.cod_consulta
             if self.bst.buscar(chave):
                 print(f"Erro: Consulta com código {chave} já existe.")
                 return False
 
             registro_a_salvar = [
-                str(consulta_obj.codigo), str(consulta_obj.cod_paciente),
-                str(consulta_obj.cod_medico), str(consulta_obj.cod_exame),
-                consulta_obj.data, consulta_obj.hora
+                str(consulta_obj.cod_consulta),
+                str(consulta_obj.cod_paciente),
+                str(consulta_obj.cod_medico),
+                str(consulta_obj.cod_exame),
+                consulta_obj.data,
+                consulta_obj.hora
             ]
 
             nova_linha = len(self.io_manager.ler_todos()) + 1
             self.io_manager.salvar_novo_registro(registro_a_salvar)
             self.bst.inserir(chave, nova_linha)
 
-            cod_dia = consulta_obj.data.replace('-', '')
+            cod_dia = consulta_obj.data.replace("-", "")
             self.servicos.atualizar_vagas_mais_um(cod_dia, cod_especialidade_para_vaga)
             return True
 
@@ -62,15 +61,13 @@ class CrudConsultas:
         if not registro_exame:
             print("Aviso: Exame da consulta não encontrado, mas a consulta será removida.")
 
-        removida_com_sucesso = self.servicos.remover_fisicamente_registro(self.NOME_TABELA, str(cod_consulta))
-
-        if not removida_com_sucesso:
+        if not self.servicos.remover_fisicamente_registro(self.NOME_TABELA, str(cod_consulta)):
             print(f"Erro: Falha na remoção física da consulta {cod_consulta}")
             return False
 
         if registro_exame:
             cod_especialidade_para_vaga = registro_exame[2]
-            cod_dia = data_consulta.replace('-', '')
+            cod_dia = data_consulta.replace("-", "")
             self.servicos.atualizar_vagas_menos_um(cod_dia, cod_especialidade_para_vaga)
 
         return True
@@ -92,13 +89,12 @@ class CrudConsultas:
 
         dados_paciente = self.servicos.lookup_paciente(cod_paciente_fk)
         paciente_nome = dados_paciente[1] if dados_paciente else "Paciente não encontrado"
-        cidade_nome = "N/A"
-        cidade_uf = "N/A"
+        cidade_nome, cidade_uf = "N/A", "N/A"
+
         if dados_paciente:
             dados_cidade = self.servicos.lookup_cidade(dados_paciente[5])
             if dados_cidade:
-                cidade_nome = dados_cidade[1]
-                cidade_uf = dados_cidade[2]
+                cidade_nome, cidade_uf = dados_cidade[1], dados_cidade[2]
 
         dados_medico = self.servicos.lookup_medico(cod_medico_fk)
         medico_nome = dados_medico[1] if dados_medico else "Médico não encontrado"
@@ -151,19 +147,20 @@ class CrudConsultas:
         except (ValueError, IndexError):
             return None
 
-        valor_total = self.servicos.regras_negocio.calcular_valor_total_consulta(valor_especialidade, valor_exame)
+        valor_total = self.servicos.regras_negocio.calcular_valor_total_consulta(
+            valor_especialidade, valor_exame
+        )
         return {
             "cod_especialidade": cod_especialidade,
             "cod_exame": cod_exame,
             "valor_especialidade": valor_especialidade,
             "valor_exame": valor_exame,
-            "valor_total": valor_total
+            "valor_total": valor_total,
         }
 
     def faturamento_por_dia(self, data_filtro: str) -> float:
         faturamento_total = 0.0
-        todos_registros = self.io_manager.ler_todos()
-        for registro in todos_registros:
+        for registro in self.io_manager.ler_todos():
             if registro[4] == data_filtro:
                 cod_medico = registro[2]
                 cod_exame = registro[3]
@@ -177,8 +174,7 @@ class CrudConsultas:
 
     def faturamento_por_periodo(self, data_inicio: str, data_fim: str) -> float:
         faturamento_total = 0.0
-        todos_registros = self.io_manager.ler_todos()
-        for registro in todos_registros:
+        for registro in self.io_manager.ler_todos():
             data_consulta = registro[4]
             if data_inicio <= data_consulta <= data_fim:
                 cod_medico = registro[2]
@@ -193,8 +189,7 @@ class CrudConsultas:
 
     def faturamento_por_medico(self, cod_medico_filtro: str) -> float:
         faturamento_total = 0.0
-        todos_registros = self.io_manager.ler_todos()
-        for registro in todos_registros:
+        for registro in self.io_manager.ler_todos():
             if registro[2] == cod_medico_filtro:
                 cod_medico = registro[2]
                 cod_exame = registro[3]
@@ -208,8 +203,7 @@ class CrudConsultas:
 
     def faturamento_por_especialidade(self, cod_especialidade_filtro: str) -> float:
         faturamento_total = 0.0
-        todos_registros = self.io_manager.ler_todos()
-        for registro in todos_registros:
+        for registro in self.io_manager.ler_todos():
             cod_medico = registro[2]
             cod_exame = registro[3]
             dados_medico = self.servicos.lookup_medico(cod_medico)
