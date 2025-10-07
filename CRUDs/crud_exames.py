@@ -101,3 +101,16 @@ class CrudExames:
 
     def ler_todos(self) -> List[List[str]]:
         return self.io_manager.ler_todos()
+
+    def ler_exames_exaustivamente(self) -> List[List[str]]:
+        todos = self.io_manager.ler_todos()
+        resultado = []
+        for reg in todos:
+            registro_completo = [
+                int(reg[0]),
+                reg[1],
+                int(reg[2]),
+                float(reg[3])
+            ]
+            resultado.append(registro_completo)
+        return resultado
