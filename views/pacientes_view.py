@@ -223,7 +223,7 @@ def pacientes_view(page: ft.Page, crud_pacientes: CrudPacientes):
 
     botoes_form = ft.Column(
         [
-            ft.Text("Detalhes do Paciente", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+            ft.Text("Detalhes do Pacientes", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
             nome_field,
             nascimento_field,
             telefone_field,
