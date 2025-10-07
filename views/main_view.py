@@ -108,7 +108,7 @@ class ViewManager:
             self.page.views.append(view)
             carregar_tabela()
         elif rota == "/consultas":
-            view = consultas_view(self.page)
+            view = consultas_view(self.page, self.crud_consultas)
             self.page.views.append(view)
         elif rota == "/diarias":
             view = diarias_view(self.page)

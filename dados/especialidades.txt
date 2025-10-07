@@ -1,0 +1,2 @@
+3;Hematologia;40.0;9
+4;Odontologia;70.0;3
